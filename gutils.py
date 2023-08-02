@@ -171,7 +171,7 @@ def fill_fll1(vertexes, fll='fadr.fll'):
 			'InputVariable: snr\n'+
 			'\tdescription: Signal Noise Ratio\n'
 			'\tenabled: true\n'+
-			'\trange: -6.0  30.0\n'+
+			'\trange: -5.5  27.8\n'+
 			'\tlock-range: true\n'+
 			f'\tterm: poor       Triangle {vertexes[0]} {vertexes[1]} {vertexes[2]}\n'+
 			f'\tterm: acceptable Triangle {vertexes[3]} {vertexes[4]} {vertexes[5]}\n'+
@@ -232,7 +232,7 @@ def fill_fll2(vertexes, fll='fadr.fll'):
 			'InputVariable: snr\n'+
 			'\tdescription: Signal Noise Ratio\n'
 			'\tenabled: true\n'+
-			'\trange: -6.0  30.0\n'+
+			'\trange: -5.5  27.8\n'+
 			'\tlock-range: true\n'+
 			f'\tterm: very_poor       Triangle {vertexes[0]} {vertexes[1]} {vertexes[2]}\n'+
 			f'\tterm: poor            Triangle {vertexes[3]} {vertexes[4]} {vertexes[5]}\n'+
