@@ -79,6 +79,73 @@ def generate_vertexes(min_val, max_val, min_dist):
 
   return coords
 
+def generate_vertexes02(min_val, max_val, min_dist):
+  coords = np.zeros(18)
+  
+  coords[0] = min_val
+  coords[17] = max_val
+
+  flag = True
+  while flag or coords[2] - coords[0] < min_dist:
+    coords[1:3] = np.random.uniform(coords[0], max_val, 2)
+    coords[0:3].sort()
+    flag = False
+
+  flag = True
+  while flag or coords[5] - coords[3] < min_dist:
+    coords[3] = np.random.uniform(coords[0], coords[2])
+    coords[4:6] = np.random.uniform(coords[3], max_val, 2)
+    coords[3:6].sort()
+    flag = False
+  
+  flag = True
+  while flag or coords[8] - coords[6] < min_dist:
+    coords[6] = np.random.uniform(coords[0], coords[5])
+    coords[7:9] = np.random.uniform(coords[6], max_val, 2)
+    coords[6:9].sort()
+    flag = False
+  
+  flag = True
+  while flag or coords[11] - coords[9] < min_dist:
+    coords[9] = np.random.uniform(coords[0], coords[8])
+    coords[10:12] = np.random.uniform(coords[9], max_val, 2)
+    coords[9:12].sort()
+    flag = False
+  
+  flag = True
+  while flag or coords[14] - coords[12] < min_dist:
+    coords[12] = np.random.uniform(coords[0], coords[11])
+    coords[13:15] = np.random.uniform(coords[12], max_val, 2)
+    coords[12:15].sort()
+    flag = False
+  
+  flag = True
+  while flag or coords[17] - coords[15] < min_dist:
+    coords[15] = np.random.uniform(coords[0], coords[14])
+    coords[16] = np.random.uniform(coords[12], max_val)
+    coords[15:17].sort()
+    flag = False
+
+  # 3 - 5, 6 - 8, 9 - 11, 12 - 14, 15 - 17
+  coords[3:14].sort()
+  if coords[5] <= coords[2]:
+    coords[5] = coords[2] + np.random.uniform(0.05, 0.25)
+    coords[5] = min(max_val, coords[5])
+  
+  if coords[8] <= coords[5]:
+    coords[8] = coords[5] + np.random.uniform(0.05, 0.25)
+    coords[8] = min(max_val, coords[8])
+  
+  if coords[11] <= coords[8]:
+    coords[11] = coords[8] + np.random.uniform(0.05, 0.25)
+    coords[11] = min(max_val, coords[11])
+  
+  if coords[14] <= coords[11]:
+    coords[14] = coords[11] + np.random.uniform(0.05, 0.25)
+    coords[14] = min(max_val, coords[14])
+
+  return coords
+
 def swap(a, b):
   aux = a
   a = b
@@ -224,4 +291,10 @@ def main(pop_size=2, n_gen=1):
       file.write(','.join(map(str, solutions[i]))+','+','.join(map(str, fitness[i]))+'\n')
 
 if __name__ == '__main__':
-  main(80, 90)
+  #main(80, 90)
+  #v = [10.77994548965534,12.348506259705703,14.0,7.0,10.51392789771179,10.741762367039113,7.7954471330686435,8.084589348165428,10.974291464817608,8.876966638890405,9.752189523902889,11.025812525676562,10.954208302282966,11.647803493210008,11.88410311927191,7.760614242304446,9.774751476724772,12.0]
+  
+  #gutils.simulate(321, 'ns3::AdrComponent')
+  pdr, energy = gutils.calc(321, '', 'component')
+  print(f'pdr={pdr} and energy={energy}')
+

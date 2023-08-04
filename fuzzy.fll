@@ -1,0 +1,69 @@
+Engine: FADR
+	description: An Engine for ADR LoRaWAN
+InputVariable: snr
+	description: Signal Noise Ratio
+	enabled: true
+	range: -5.5  27.8
+	lock-range: true
+	term: very_poor       Triangle -5.5 -4.089907049554258 5.401263855190653
+	term: poor            Triangle -4.329761028895306 0.870648890686204 13.217872896617063
+	term: acceptable      Triangle 16.40480080272272 17.059003045488982 21.607397249982935
+  term: almost_good     Triangle 21.620994309734215 23.46821165181472 23.56645339062103
+	term: good            Triangle 17.90648162115455 24.109217615960556 27.8
+	term: very_good       Triangle 2.0 2.0904021698512087 4.5305759093243125
+OutputVariable: tp
+	description: TP based on Mamdani inference
+	enabled: true
+	range:   2  14
+	lock-range: false
+	aggregation: Maximum
+	defuzzifier: Centroid 50
+	default: nan
+	lock-previous: false
+	term:  very_low    Triangle  2.0 2.0904021698512087 4.5305759093243125
+	term:  low         Triangle  4.2956668190460086 5.470268917106554 8.011713084205748
+	term:  average     Triangle  10.827956232605583 10.885006839211869 11.308504740122025
+  term:  almost_high Triangle  12.104771183481272 12.499329470171418 12.571262712120234
+	term:  high        Triangle  8.883966224438904 9.334578128173957 14.0
+	term:  very_high   Triangle  5.575846848531146 6.063032630493333 14.0
+OutputVariable: sf
+	description: SF based on Sugeno inference
+	enabled: true
+	range: 7  12
+  lock-range: false
+  aggregation: none
+  defuzzifier: WeightedAverage TakagiSugeno
+  default: nan
+  lock-previous: true
+	term:  sf7  Triangle  7.0 8.180069271889575 8.833661664746959
+	term:  sf8  Triangle  7.509217659194163 7.6987751325944505 8.965651055788314
+	term:  sf9  Triangle  8.065088768102099 8.583628415390832 9.250399488863565
+	term:  sf10 Triangle  8.943634815791146 10.8003292859233 12.0
+	term:  sf11 Triangle  7.062731996651234 7.875375366390575 12.0
+  term:  sf12 Triangle  7.062731996651234 7.875375366390575 12.0
+RuleBlock: mamdani
+	description: Mamdani Inference for TP
+	enabled: true
+	conjunction: Minimum
+	disjunction: Maximum
+	implication: Minimum
+	activation: General
+	rule: if snr is very_poor then tp is very_high
+	rule: if snr is poor then tp is high
+	rule: if snr is acceptable then tp is almost_high
+  rule: if snr is almost_good then tp is average
+	rule: if snr is good then tp is low
+	rule: if snr is very_good then tp is very_low
+RuleBlock: sugeno
+	description: Sugeno Inference for SF
+  enabled: true
+  conjunction: none
+  disjunction: none
+  implication: none
+  activation: General
+	rule: if snr is very_poor then sf is sf12
+	rule: if snr is poor then sf is sf11
+	rule: if snr is acceptable then sf is sf10
+  rule: if snr is almost_good then sf is sf9
+	rule: if snr is good then sf is sf9
+	rule: if snr is very_good then sf is sf7

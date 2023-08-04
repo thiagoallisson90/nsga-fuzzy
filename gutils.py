@@ -1,7 +1,9 @@
+#!/usr/bin/python3
 import concurrent.futures
 import math
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 import pandas as pd
 
 ns3_dir = '/home/thiago/Documentos/Doutorado/Simuladores/ns-3-allinone/ns-3.38'
@@ -13,18 +15,21 @@ def calc_pdr(adr, num_reps=4, prefix='F'):
 	files = [f'{ns3_dir}/phyPerformance102{prefix}ADR-{i}.csv' for i in range(1, num_reps+1)]
 	x_s = [pd.read_csv(file)['received'].mean() for file in files]
 	adr['mean_pdr'] = np.mean(x_s)
+	adr['pdr'] = x_s
 
 # prefix={'F', ''}
 def calc_pdr_range(adr, prefix='F', n_runs=[96, 239, 116, 134, 64, 287]):
 	files = [f'{ns3_dir}/phyPerformance102{prefix}ADR-{i}.csv' for i in n_runs]
 	x_s = [pd.read_csv(file)['received'].mean() for file in files]
 	adr['mean_pdr'] = np.mean(x_s)
+	adr['energy'] = x_s
 
 # prefix={'component', 'fuzzy'}
 def calc_energy(adr, num_reps=4, prefix='fuzzy'):
 	files = [f'{ns3_dir}/battery-level-{prefix}-{i}.txt' for i in range(1, num_reps+1)]
 	x_s = [(10000 - pd.read_csv(file, names=['num', 'energy'])['energy'].mean()) for file in files]
 	adr['mean_energy'] = np.mean(x_s)
+	adr['energy'] = x_s
 	
 # prefix={'component', 'fuzzy'}
 def calc_energy_range(adr, prefix='fuzzy', n_runs=[96, 239, 116, 134, 64, 287]):
@@ -89,7 +94,7 @@ def calc(num_reps=4, prefix_pdr='F', prefix_energy='fuzzy'):
      executor.submit(calc_energy, adr, num_reps, prefix_energy)]
 	concurrent.futures.wait(results)
 	executor.shutdown()
-	return adr['mean_pdr'], adr['mean_energy']
+	return adr['mean_pdr'], adr['mean_energy'], adr['pdr'], adr['energy']
 
 def calc_range(prefix_pdr='F', prefix_energy='fuzzy'):
 	adr = {}
@@ -98,7 +103,7 @@ def calc_range(prefix_pdr='F', prefix_energy='fuzzy'):
      executor.submit(calc_energy_range, adr, prefix_energy)]
 	concurrent.futures.wait(results)
 	executor.shutdown()
-	return adr['mean_pdr'], adr['mean_energy']
+	return adr['mean_pdr'], adr['mean_energy'], adr['energy'], adr['pdr']
 
 def fill_fll(vertexes, rules1, rules2, fll='fadr.fll'):	
 	filename = \
@@ -378,3 +383,48 @@ def log_i_bests(data, log='i_bests'):
 
 def close_file(file):
 	file.close()
+
+def plot_sets(sets, var_name, name_sets):
+	for i in range(int(len(sets)/3)):
+		x = sets[i*3:(i+1)*3]
+		y = [0,1,0]
+		plt.plot(x, y)
+	
+	plt.xlabel('Sets')
+	plt.ylabel('Degree of Membership')
+	plt.title(f'Triangular Functions for Var {var_name}')
+	plt.legend(name_sets, loc='upper right')
+	plt.grid(True)
+	plt.show()
+
+def plot_metrics(pdr1, energy1, pdr2, energy2, legends):
+	plt.plot(range(1, len(pdr1)+1), pdr1, marker='*')
+	plt.plot(range(1, len(pdr2)+1), pdr2, marker='o')
+	plt.legend(legends)
+	plt.title('Analysis of the PDR')
+	plt.xlabel('Iterations')
+	plt.ylabel('PDR')
+	plt.show()
+
+	plt.plot(range(1, len(energy1)+1), energy1)
+	plt.plot(range(1, len(energy2)+1), energy2)
+	plt.legend(legends)
+	plt.title('Analysis of the Remainder Energy')
+	plt.xlabel('Iterations')
+	plt.ylabel('Energy(J)')
+	plt.show()
+
+if __name__ == '__main__':
+	X = [-5.5,	-5.373316853283719,	11.925307263198903,	-1.2406559599738198,	13.924164250594917,	10.367941437055237,	10.119430527791334,	12.50596087962387,	14.630019783174152,	12.022593407654899,	25.18755233554782,	25.654411272272096,	20.57204489233765,	26.674153582811385,	27.8,	2.0,	2.8291043084661944,	4.161518008362397,	3.2648059063534083,	6.338700808354995,	8.47121227477754,	3.9886864397970303,	10.609517342763759,	11.111621079430343,	9.406379785036073,	13.299661396826508,	13.54971582012118,	9.784736575439172,	13.861498177446482,	14.0,	7.0,	7.705170786199022,	8.46320121905088,	7.098984466475893,	7.993787716587748,	8.31836626589137,	7.653514917228756,	8.757317812108802,	8.817971989588624,	8.212061319950596,	9.090224023036614,	9.379542124254364,	8.268685739119933,	10.418695485080168,	12.0]
+	fill_fll3(X)
+	
+	simulate(30)
+	m_pdr_nsga, m_energy_nsga, pdr_nsga, energy_nsga = calc(30)
+
+	simulate(30, 'ns3::AdrComponent')
+	m_pdr_c, m_energy_c, pdr_c, energy_c = calc(30, '', 'component')
+
+	print(f'NSGA\npdr={m_pdr_nsga} and energy={m_energy_nsga}')
+	print(f'Component\npdr={m_pdr_c} and energy={m_energy_c}')
+
+	plot_metrics(pdr_nsga, energy_nsga, pdr_c, energy_c, legends=['NSGA-Fuzzy ADR', 'NS-3 ADR'])
